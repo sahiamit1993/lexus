@@ -1,138 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LEXIS — Type to Defend the Galaxy</title>
-  <meta name="description" content="LEXIS is a fast-paced typing shooter game. Type words to fire beams at enemy ships. Beat your high score!" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌌</text></svg>"/>
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-    html, body {
-      width: 100%; height: 100vh;
-      background: #05060F;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Courier New', Courier, monospace;
-      overflow: hidden;
-    }
-
-    #gameWrap {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-    }
-
-    #gameCanvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    /* ── HUD ── */
-    #ui {
-      position: absolute; top: 0; left: 0; right: 0;
-      pointer-events: none; padding: 14px 20px;
-      display: flex; justify-content: space-between; align-items: flex-start;
-    }
-    #score-display { color: #7DF9C8; font-size: 14px; line-height: 1.9; }
-    #lives-display { font-size: 14px; text-align: right; }
-
-    #typed-display {
-      position: absolute; bottom: 54px; left: 50%; transform: translateX(-50%);
-      color: #FFD700; font-size: 20px; font-weight: 700; letter-spacing: 6px;
-      pointer-events: none; min-width: 160px; text-align: center; white-space: nowrap;
-      text-shadow: 0 0 12px rgba(255,215,0,0.6);
-    }
-
-    #wave-display {
-      position: absolute; top: 42%; left: 50%; transform: translate(-50%,-50%);
-      color: #fff; font-size: 24px; font-weight: 500; text-align: center;
-      pointer-events: none; opacity: 0; transition: opacity 0.5s;
-      white-space: nowrap; line-height: 1.6;
-    }
-
-    #combo-display {
-      position: absolute; bottom: 100px; right: 20px;
-      color: #FFD700; font-size: 13px; pointer-events: none;
-      opacity: 0; transition: opacity 0.3s;
-    }
-
-    /* ── LEVEL BAR ── */
-    #level-bar {
-      position: absolute; bottom: 0; left: 0; right: 0; height: 38px;
-      background: rgba(0,0,0,0.85);
-      border-top: 0.5px solid rgba(125,249,200,0.2);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 20px; pointer-events: none;
-    }
-    #level-info  { color: #7DF9C8; font-size: 12px; letter-spacing: 1px; min-width: 160px; }
-    #xp-bar-wrap { flex: 1; margin: 0 16px; height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
-    #xp-bar      { height: 100%; background: #7DF9C8; border-radius: 3px; width: 0%; transition: width 0.35s; }
-    #speed-info  { color: #FF9F43; font-size: 12px; letter-spacing: 1px; min-width: 90px; text-align: right; }
-
-    /* ── LEVEL-UP BANNER ── */
-    #level-up-banner {
-      position: absolute; top: 30%; left: 50%; transform: translate(-50%,-50%);
-      text-align: center; pointer-events: none; opacity: 0; transition: opacity 0.4s;
-    }
-    #level-up-banner .lvl-title { color: #FFD700; font-size: 24px; font-weight: 700; letter-spacing: 4px; }
-    #level-up-banner .lvl-sub   { color: #FF9F43; font-size: 14px; margin-top: 6px; letter-spacing: 1px; }
-
-    /* ── OVERLAY ── */
-    #overlay {
-      position: absolute; inset: 0;
-      background: rgba(5,6,15,0.96);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 12px; overflow-y: auto; padding: 24px 20px 20px;
-    }
-    #overlay h1 {
-      color: #7DF9C8; font-size: 56px; font-weight: 700; letter-spacing: 14px;
-      text-shadow: 0 0 40px rgba(125,249,200,0.6);
-    }
-    #overlay h2 { color: #7DF9C8; font-size: 20px; font-weight: 500; letter-spacing: 2px; }
-    #overlay p  { color: #aaa; font-size: 14px; text-align: center; max-width: 480px; line-height: 1.8; }
-    .score-final { color: #FFD700; font-size: 36px; font-weight: 700; }
-
-    #overlay button {
-      background: transparent; border: 0.5px solid #7DF9C8; color: #7DF9C8;
-      padding: 12px 40px; font-size: 15px; cursor: pointer; border-radius: 4px;
-      font-family: inherit; letter-spacing: 3px; margin-top: 8px;
-      transition: background 0.2s;
-    }
-    #overlay button:hover { background: rgba(125,249,200,0.12); }
-
-    /* ── STAT CARDS ── */
-    .stat-row {
-      display: flex; justify-content: space-between;
-      width: 100%; max-width: 620px; gap: 10px;
-    }
-    .stat-box {
-      flex: 1; background: rgba(255,255,255,0.04);
-      border: 0.5px solid rgba(255,255,255,0.08);
-      border-radius: 6px; padding: 10px 12px; text-align: center;
-    }
-    .stat-box .sv { color: #FFD700; font-size: 17px; font-weight: 700; }
-    .stat-box .sl { color: #444; font-size: 10px; margin-top: 3px; letter-spacing: 1px; }
-
-    /* ── PROGRESS CHART ── */
-    #progressChart {
-      width: 100%; max-width: 620px;
-      background: rgba(255,255,255,0.025);
-      border: 0.5px solid rgba(125,249,200,0.14);
-      border-radius: 6px; padding: 16px; margin-top: 6px;
-    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{width:100%;height:100%;background:#05060F;overflow:hidden;font-family:'Courier New',Courier,monospace}
+    #gameWrap{position:fixed;top:0;left:0;width:100vw;height:100vh}
+    #gameCanvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
+    #ui{position:absolute;top:0;left:0;right:0;pointer-events:none;padding:16px 22px;display:flex;justify-content:space-between;align-items:flex-start}
+    #score-display{color:#7DF9C8;font-size:15px;line-height:2}
+    #lives-display{font-size:15px;text-align:right}
+    #typed-display{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);color:#FFD700;font-size:22px;font-weight:700;letter-spacing:7px;pointer-events:none;min-width:160px;text-align:center;white-space:nowrap;text-shadow:0 0 14px rgba(255,215,0,0.6)}
+    #wave-display{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:26px;font-weight:500;text-align:center;pointer-events:none;opacity:0;transition:opacity 0.5s;white-space:nowrap;line-height:1.6}
+    #combo-display{position:absolute;bottom:110px;right:22px;color:#FFD700;font-size:14px;pointer-events:none;opacity:0;transition:opacity 0.3s}
+    #level-bar{position:absolute;bottom:0;left:0;right:0;height:40px;background:rgba(0,0,0,0.85);border-top:0.5px solid rgba(125,249,200,0.2);display:flex;align-items:center;justify-content:space-between;padding:0 22px;pointer-events:none}
+    #level-info{color:#7DF9C8;font-size:13px;letter-spacing:1px;min-width:170px}
+    #xp-bar-wrap{flex:1;margin:0 18px;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
+    #xp-bar{height:100%;background:#7DF9C8;border-radius:3px;width:0%;transition:width 0.35s}
+    #speed-info{color:#FF9F43;font-size:13px;letter-spacing:1px;min-width:95px;text-align:right}
+    #level-up-banner{position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;opacity:0;transition:opacity 0.4s}
+    #level-up-banner .lvl-title{color:#FFD700;font-size:26px;font-weight:700;letter-spacing:4px}
+    #level-up-banner .lvl-sub{color:#FF9F43;font-size:15px;margin-top:6px;letter-spacing:1px}
+    #overlay{position:absolute;inset:0;background:rgba(5,6,15,0.96);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;overflow-y:auto;padding:30px 20px}
+    #overlay h1{color:#7DF9C8;font-size:clamp(40px,8vw,80px);font-weight:700;letter-spacing:clamp(8px,2vw,18px);text-shadow:0 0 40px rgba(125,249,200,0.6)}
+    #overlay p{color:#aaa;font-size:clamp(12px,1.5vw,15px);text-align:center;max-width:520px;line-height:1.8}
+    .score-final{color:#FFD700;font-size:clamp(24px,4vw,38px);font-weight:700}
+    #overlay button{background:transparent;border:0.5px solid #7DF9C8;color:#7DF9C8;padding:13px 44px;font-size:clamp(13px,1.5vw,16px);cursor:pointer;border-radius:4px;font-family:inherit;letter-spacing:3px;margin-top:8px;transition:background 0.2s}
+    #overlay button:hover{background:rgba(125,249,200,0.12)}
+    .stat-row{display:flex;justify-content:space-between;width:100%;max-width:660px;gap:10px}
+    .stat-box{flex:1;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.08);border-radius:6px;padding:10px 12px;text-align:center}
+    .stat-box .sv{color:#FFD700;font-size:clamp(13px,1.8vw,18px);font-weight:700}
+    .stat-box .sl{color:#444;font-size:10px;margin-top:3px;letter-spacing:1px}
+    #progressChart{width:100%;max-width:660px;background:rgba(255,255,255,0.025);border:0.5px solid rgba(125,249,200,0.14);border-radius:6px;padding:16px;margin-top:6px}
   </style>
 </head>
 <body>
-
 <div id="gameWrap">
   <canvas id="gameCanvas"></canvas>
-
-  <!-- HUD -->
   <div id="ui">
     <div id="score-display">
       <div>SCORE <span id="score">0</span></div>
@@ -141,41 +48,828 @@
     </div>
     <div id="lives-display">
       <div id="hearts">❤️❤️❤️</div>
-      <div style="font-size:10px;color:#555;margin-top:2px;letter-spacing:1px">SHIELDS</div>
+      <div style="font-size:11px;color:#555;margin-top:2px;letter-spacing:1px">SHIELDS</div>
     </div>
   </div>
-
   <div id="typed-display"></div>
   <div id="wave-display"></div>
   <div id="combo-display"></div>
-
   <div id="level-up-banner">
     <div class="lvl-title" id="lvl-title"></div>
-    <div class="lvl-sub"   id="lvl-sub"></div>
+    <div class="lvl-sub" id="lvl-sub"></div>
   </div>
-
   <div id="level-bar">
     <div id="level-info">LVL 1 — RECRUIT</div>
     <div id="xp-bar-wrap"><div id="xp-bar"></div></div>
     <div id="speed-info">SPEED 1.0×</div>
   </div>
-
-  <!-- Start / Game-Over Overlay -->
   <div id="overlay">
-    <div style="font-size:56px;margin-bottom:4px">🌌</div>
+    <div style="font-size:clamp(48px,7vw,72px);margin-bottom:4px">🌌</div>
     <h1>LEXIS</h1>
     <p style="color:#444;font-size:12px;letter-spacing:3px">TYPE TO DEFEND THE GALAXY</p>
-    <p style="margin-top:10px">
-      Type words to fire at enemy ships — each correct letter fires an instant beam!<br>
-      Speed increases <span style="color:#FF9F43">+20%</span> every 3 waves.
-    </p>
+    <p style="margin-top:10px">Type words to fire at enemy ships — each correct letter fires an instant beam!<br>Speed increases <span style="color:#FF9F43">+20%</span> every 3 waves.</p>
     <p style="color:#444;font-size:12px">No mouse needed — just start typing</p>
     <button id="startBtn">LAUNCH MISSION</button>
     <div id="historyPreview"></div>
   </div>
 </div>
+<script>
+// words.js — LEXIS word pool, grouped by difficulty (length)
+const ALL_WORDS = [
+  // 2-letter
+  'be','do','go','hi','if','in','is','it','me','my','no','of','ok','on','or','to','up','us','we',
+  // 3-letter
+  'ace','add','ago','aid','aim','air','all','and','ant','any','arc','arm','art','ask','awe',
+  'bad','bag','ban','bar','bat','bay','bed','big','bit','box','boy','bud','bug','bus','but','buy',
+  'can','cap','car','cat','cry','cup','cut','day','did','dig','dim','dot','dry','due',
+  'ear','eat','egg','ego','end','era','eye','far','fat','fee','few','fit','fix','fly','fog','for','fox','fun','fur',
+  'gap','gas','get','god','got','gun','gut','guy','gym','had','has','hat','hay','her','him','hip','his','hit','hop','hot','how','hug',
+  'ice','ill','ink','ion','jar','jaw','jet','job','jog','joy','jug','key','kid','kit',
+  'lab','lag','lap','law','lay','led','leg','let','lid','lip','lit','log','lot','low',
+  'mad','map','may','mob','mom','mop','mud','mug','nap','net','new','not','now','nut',
+  'oak','odd','off','oil','old','one','opt','orb','ore','out','owl','own',
+  'pad','pal','pan','pat','paw','pay','pen','pet','pie','pig','pin','pit','pod','pop','pot','pub','pun','put',
+  'rag','ram','ran','rap','rat','raw','ray','red','rid','rim','rip','rob','rod','rot','row','rub','rug','run',
+  'sap','saw','say','set','sew','shy','sin','sip','sit','six','sky','sob','son','spa','spy','sub','sum','sun',
+  'tab','tan','tap','tar','tax','tea','ten','tie','tin','tip','toe','top','toy','try','tug','two',
+  'use','van','vat','via','vow','wag','war','was','wax','way','web','wed','wet','who','why','win','wit','won',
+  'yam','yep','yet','you','zap','zen','zip','zoo',
+  // 4-letter
+  'able','acid','aged','area','army','away','baby','back','ball','band','bank','base','bath','bear','beat',
+  'bell','belt','best','bike','bill','bind','bird','bite','blow','blue','boat','bold','bolt','bomb','bond',
+  'bone','book','boom','boot','born','bowl','bulk','bull','bump','burn','bust','busy','byte',
+  'cage','cake','call','calm','camp','card','care','cart','case','cash','cast','cave','cell','cent','chat',
+  'chef','chip','chop','city','clap','clip','club','clue','coal','coat','code','coin','cold','comb','come',
+  'cone','cook','cool','copy','cord','cost','crew','crop','cube','curb','cure','curl',
+  'damp','dare','dart','dash','data','date','dawn','dead','deal','dear','debt','deck','deed','deep','dent',
+  'desk','dial','dice','diet','disk','dive','dock','dome','done','door','dose','down','draw','drop','drum',
+  'dune','dusk','dust','duty',
+  'each','edge','else','epic','even','ever','exam','exit',
+  'face','fact','fail','fair','fake','fall','fame','farm','fast','fate','fear','feat','feel','fill','film',
+  'find','fine','fire','firm','fish','fist','flag','flat','flip','flow','foam','fold','fond','food','fool',
+  'foot','form','fort','four','free','frog','from','fuel','full','fuse',
+  'gain','game','gang','gaze','gear','gift','girl','give','glad','glow','glue','goal','gold','golf','good','grab',
+  'grid','grin','grip','grow','gulf',
+  'hack','hail','hair','half','hall','hand','hang','hard','harm','have','heal','heap','heat','heel','held',
+  'helm','help','here','hero','hide','high','hill','hint','hire','hold','hole','home','hood','hook','hope',
+  'horn','host','hour','hunt',
+  'icon','idea','inch','into','iron','isle','item',
+  'jack','jade','jail','jump','just','keen','keep','kick','kill','kind','king','knee','know',
+  'lace','lack','lake','lamp','land','lane','last','late','lead','leaf','lean','leap','left','lend','lens',
+  'less','lick','life','lift','like','lime','line','link','lion','list','live','load','loan','lock','lone',
+  'long','look','lord','lose','loss','loud','love','luck','lung',
+  'made','mail','main','make','mall','mare','mark','mask','mass','mate','math','maze','meal','mean','meat',
+  'meet','melt','menu','mild','mile','milk','mill','mind','mine','mint','miss','mist','mode','mold','monk',
+  'moon','more','most','move','much','must','myth',
+  'nail','name','neon','nest','next','nice','nine','node','none','noon','norm','note','noun',
+  'once','only','open','oven','over',
+  'pace','pack','page','pain','pair','pale','palm','park','part','pass','past','path','peak','peer','pest',
+  'pick','pile','pink','pipe','plan','play','plot','plug','plus','poem','poll','pond','pool','pore','port',
+  'pose','post','pour','pray','prey','pull','pump','pure','push',
+  'race','rack','rage','rain','rake','rank','rave','read','real','reap','rear','rely','rent','rest','rice',
+  'rich','ride','ring','riot','rise','risk','road','roam','roar','rock','role','roll','room','rope','rose',
+  'rude','rule','rush',
+  'safe','sail','sake','sale','salt','same','sand','sang','save','scan','seal','seat','seed','seek','seen',
+  'self','sell','send','sign','silk','sing','sink','site','size','skin','slam','slim','slip','slow','snap',
+  'soar','sock','soil','sole','song','soon','sore','sort','soul','soup','spin','spit','spot','star','stay',
+  'step','stir','stop','stun','such','suit','sung','sure','sway','swim','sync',
+  'tail','tale','talk','tall','task','tell','tend','tent','term','test','text','than','that','them','then',
+  'they','thin','this','tile','time','tiny','tire','told','toll','tone','took','torn','toss','tour','town',
+  'trap','tree','trek','trim','trip','true','tube','tune','turf','turn','twin','type',
+  'undo','unit','upon','used','vain','vary','vast','veil','vein','vent','verb','very','vest','view','vine',
+  'void','vote','wade','wake','walk','wall','want','ward','warm','warn','warp','wash','wave','weak','wear',
+  'weed','week','well','went','were','west','wide','wild','will','wind','wine','wing','wire','wish','with',
+  'wolf','wood','wool','word','wore','work','wrap',
+  'yard','yarn','year','yell','your','zero','zest','zone',
+  // 5-letter
+  'abbey','abort','about','above','abuse','acute','adapt','admit','adopt','adult','after','again','agent',
+  'agree','ahead','alarm','album','alert','alien','align','alive','alone','along','alter','amaze','amend',
+  'ample','angel','anger','angle','angry','ankle','apart','apple','apply','arena','argue','arise','array',
+  'aside','asset','atlas','audit','avert','avoid','awake','award','aware',
+  'badge','baker','basic','basis','batch','beach','began','begin','being','below','bench','berry',
+  'black','blade','blame','blank','blast','blaze','bleed','blend','bless','blink','block','blood','bloom',
+  'board','boast','bonus','boost','bound','brain','brand','brave','break','breed','brick','bride','brief',
+  'brink','brisk','broad','broke','brook','brown','brush','build','built','bunch','burst',
+  'cabin','canal','candy','cargo','cause','cease','chain','chair','chaos','charm','chart','chase','cheap',
+  'check','cheek','cheer','chest','chief','child','chill','choir','civic','civil','claim','class','clean',
+  'clear','clerk','click','cliff','climb','clock','clone','close','cloth','cloud','coach','coast','cobra',
+  'comic','coral','couch','count','court','cover','crack','craft','crane','crash','crawl','crazy','cream',
+  'creek','crime','crisp','cross','crowd','crown','crush','crypt','curve',
+  'daily','dance','decay','delta','dense','depot','depth','dirty','disco','dizzy','dodge','doubt','draft',
+  'drain','dwarf','dying',
+  'eagle','early','earth','elect','elite','email','empty','enemy','enjoy','enter','entry','equal','equip',
+  'erode','error','essay','event','every','exact','exist','extra',
+  'fable','faith','fancy','fatal','fault','feast','fence','fever','field','fifth','fight','final','first',
+  'fixed','flame','flare','flash','fleet','flesh','flock','floor','flour','fluid','flute','force','forge',
+  'forum','fraud','fresh','front','frost','fruit','fully','fungi','funny',
+  'giant','given','glare','glass','glide','gloom','glory','gloss','glove','grace','grade','grain','grand',
+  'grant','grasp','grass','grave','great','greed','greet','grief','grind','groan','gross','group','grove',
+  'guard','guess','guide','guild','guilt','gusto',
+  'habit','happy','harsh','haven','heart','heavy','hedge','herbs','hippo','hoard','hobby','honor','horse',
+  'hotel','hound','house','humor','hurry',
+  'ideal','image','imply','inbox','index','inner','input','irate',
+  'joker','jolly','judge','juice','juicy','jumpy','karma','knack','knife','known',
+  'label','lance','large','laser','later','layer','learn','lease','least','leave','ledge','legal','level',
+  'light','limit','liver','local','lodge','logic','loose','lover','lower','lucky','lunar','lyric',
+  'magic','major','maker','manor','maple','march','marry','match','mayor','media','mercy','merit','metal',
+  'meter','minor','minus','model','money','month','moral','motel','motor','mount','mouse','mouth','muddy',
+  'music','naive','nerve','never','night','ninja','noble','noise','north','notch','novel','nurse',
+  'occur','offer','often','olive','orbit','order','other','outer','ozone',
+  'panic','paper','party','pasta','pause','peace','pearl','penny','perch','phone','photo','piano','piece',
+  'pilot','pinch','pizza','pixel','place','plain','plane','plant','plate','plaza','pluck','plume','point',
+  'polar','porch','pouch','power','price','pride','prime','print','prior','prize','probe','proof','prose',
+  'proud','pulse','pupil','purse','queen','query','quest','quick','quiet','quota','quote',
+  'radar','radio','raise','rally','ranch','rapid','ratio','reach','rebel','reign','relax','remix','repay',
+  'reply','reset','ridge','rifle','risky','rival','river','rogue','rough','round','route','royal','ruler','rural',
+  'sadly','saint','salad','sauce','savvy','scale','scene','scope','score','scout','sense','serve','seven',
+  'shade','shaft','shake','shame','shape','share','shark','sharp','shelf','shell','shift','shine','shirt',
+  'shock','shore','short','shout','shown','siege','sight','silly','since','sixth','sixty','skill','skull',
+  'slice','slide','slope','smart','smash','smell','smile','smoke','snack','snake','sneak','solar','solve',
+  'sorry','south','space','spare','speak','spear','speed','spend','spill','spine','spoke','spray','squad',
+  'stack','stage','stain','stand','stare','start','state','steal','steam','steel','stern','stick','still',
+  'stomp','stone','stood','store','storm','story','straw','strip','stuck','study','stuff','stump','style',
+  'sugar','suite','sunny','super','surge','swarm','swear','sweat','sweep','sweet','swift','swipe','sword','swung',
+  'table','taken','tally','taste','teach','tease','teeth','tempo','tense','thank','thick','third','thorn',
+  'three','throw','thumb','tiger','tight','title','toast','token','topic','torch','total','touch','toxic',
+  'track','trade','trail','train','trash','treat','trend','trial','trick','tried','troop','truce','truly',
+  'trunk','trust','truth','tulip','twice','twist','tying',
+  'ultra','union','unite','until','upper','upset','urban','usual','utter',
+  'vague','value','valve','vapor','vault','vigor','viral','virus','visit','vital','vivid','vocal','voice','vowel',
+  'wager','wagon','waltz','waste','watch','water','weary','weave','wedge','weigh','weird','where','which',
+  'while','white','whole','whose','wield','witch','witty','world','worry','worse','worst','worth','wound',
+  'write','wrong','yacht','yearn','yield','young','youth','zebra','zippy',
+  // 6-letter
+  'absent','accent','access','accord','action','active','actual','adjust','advise','affect','afford','agency',
+  'almost','always','anchor','annual','answer','anthem','anyway','appear','around','arrest','arrive','aspect',
+  'assure','attach','attack','attain','attend','author','autumn',
+  'ballet','barely','battle','beauty','before','behind','belief','belong','beyond','bitter','border','bottle',
+  'bounty','breath','breezy','bridge','bright','broker','bronze','bubble','bucket','budget','bullet','bunker',
+  'burden','burger','button',
+  'cactus','camera','cancel','candle','canvas','canyon','carbon','castle','casual','cattle','cavern','cement',
+  'center','chance','change','charge','cherry','choice','chrome','circle','circus','client','closet','coffee',
+  'colony','column','commit','common','corner','cotton','couple','crafty','create','credit','crisis','cursor','custom',
+  'dagger','damage','dancer','danger','dazzle','decide','defend','define','delete','deploy','deputy','desert',
+  'design','detail','detect','differ','direct','divide','dollar','domain','drawer','driven',
+  'easily','effect','effort','either','emerge','empire','enable','engage','enough','entire','escape','estate',
+  'evolve','exceed','except','expand','expert','export','extend',
+  'famine','filter','finger','finish','flavor','flight','flower','follow','forget','formal','frozen','future',
+  'gather','gentle','gifted','global','goblin','gotten','greedy','grieve','grudge','growth','guitar',
+  'happen','harbor','hardly','health','heaven','helmet','hidden','highly','hinder','honest','horror','hunter','hustle',
+  'ignore','impact','import','income','indeed','injury','insect','insist','intend','invest','island',
+  'jigsaw','joyful','junior','jungle','kidnap','killer','kitten',
+  'ladder','launch','lessen','letter','living','lonely',
+  'manage','manner','marble','master','matter','member','memory','mentor','method','middle','mirror','modern',
+  'modest','module','moment','monkey','mortal','motive','muscle','mutual','mystic',
+  'narrow','nation','nature','nearly','needle','nimble','normal','notion','number',
+  'obtain','origin','output','palace','pardon','parent','patrol','pencil','people','period','permit','person',
+  'pillar','pirate','planet','player','pledge','plenty','pocket','policy','portal','prison','proper','proven',
+  'public','punish','purple','pursue','puzzle',
+  'rabbit','raging','random','rather','really','reason','recall','reduce','reform','refund','refuse','regret',
+  'remain','remote','render','repeat','rescue','resist','resort','result','return','reveal','review','rhythm',
+  'riddle','robust','rocket','rotate','rubber','runner',
+  'sacred','safety','sample','savage','scheme','school','screen','search','second','secret','sector','secure',
+  'select','senior','settle','severe','shadow','silver','simple','single','slight','smooth','social','source',
+  'speech','sphere','spiral','splash','spoken','sprint','stable','statue','steady','strain','street','stress',
+  'strict','string','strong','stumble','submit','subtle','sunset','symbol','system',
+  'tackle','talent','target','tender','thanks','thread','threat','thrive','timber','toggle','travel','trophy',
+  'tumble','tunnel','tycoon',
+  'unable','unfair','unfold','unique','unlock','update','useful',
+  'victim','visual','volume','wander','warmth','weapon','weekly','window','winter','wisdom','within','wonder',
+  'wooden','worthy',
+  // 7-letter
+  'abstain','achieve','acquire','adamant','adverse','ancient','antenna','anxious','arrange','attract','average','awesome','awkward',
+  'balance','banking','bargain','barrier','battery','because','bedroom','between','blossom','bravery','brother','brought',
+  'cabinet','captain','capture','catalog','ceiling','certain','chapter','charity','classic','cluster','compact','company',
+  'compass','compete','complex','concern','confuse','connect','contain','context','control','convert','correct','corrupt',
+  'courage','current',
+  'defense','deliver','density','deserve','desktop','destiny','digital','dilemma','display','distant','disturb','dormant','dynasty',
+  'economy','element','engaged','examine','excited','express','extreme',
+  'fearful','fertile','fiction','focused','foolish','foreign','forever','fortify','forward','frantic','freedom','furious',
+  'general','genuine','glacier','glowing','gorilla','gravity','growing',
+  'harmful','harvest','helpful','history','hostile','however','humming','hunting',
+  'illegal','illness','imagine','impress','improve','include','initial','instead','intense','involve',
+  'jealous','keeping','knowing','lantern','largely','lasting','leading','learned','leaving','leisure','library','limited',
+  'magical','maximum','meaning','meeting','message','minimum','missing','mission','mixture','monitor','morning',
+  'nothing','nowhere','nuclear',
+  'obvious','offense','ongoing','opening','opinion','optimal','outline','outside','overall',
+  'painful','parking','partial','passing','pattern','penalty','percent','perfect','physics','picture','playing',
+  'popular','portion','present','primary','private','problem','process','product','program','project','promote',
+  'protect','provide','purpose',
+  'quickly','reading','reality','recover','regular','related','release','replace','reserve','respect','respond',
+  'restore','reverse',
+  'sailing','satisfy','scatter','science','section','serious','serving','session','setting','sharing','shelter',
+  'showing','singing','skilled','soldier','somehow','sorting','special','species','stadium','station','storage',
+  'stretch','student','subject','success','suggest','surface','survive','suspect',
+  'talking','testing','texture','theatre','through','tonight','trading','triumph','trouble','turning',
+  'unclear','unified','unknown','unusual','viewing','village','violent','visible','waiting','walking','wanting',
+  'warfare','warning','washing','wealthy','western','whether','willing','winning','without','working','writing',
+  // 8-letter
+  'absolute','abstract','accurate','activist','addition','adoption','advanced','affected','alliance','allowing',
+  'although','analysis','animated','argument','assembly','assuming','attached','audience',
+  'backfire','balanced','becoming','behavior','betrayal','blackout','blessing','blocking','boundary','breakout',
+  'bringing','building',
+  'calendar','campaign','capacity','catching','cautious','centered','champion','changing','charging','checking',
+  'choosing','cleaning','clearing','climbing','combined','commerce','complete','composed','computer','conclude',
+  'conflict','confused','constant','consumer','continue','convince','coverage','creating','crossing','cultural',
+  'database','daughter','deadline','decision','decrease','defeated','delivery','demanded','deployed','designer',
+  'detailed','discover','disorder','distance','division','dominant','doubtful','download','dramatic',
+  'earnings','educated','election','emerging','employed','encoding','enormous','entirely','entrance','equality',
+  'evaluate','everyone','evidence','exceeded','exchange','exercise','extended',
+  'featured','feedback','festival','fighting','findings','flawless','floating','flourish','followed','formally',
+  'frequent','function',
+  'generate','governed','guidance','handling','hardware','helpless','heritage','honestly',
+  'identify','illusion','imagined','impacted','included','industry','informed','innocent','inspired','instinct',
+  'integral','intended','interest',
+  'judgment','language','launched','learning','leverage','lifetime','lighting','limiting',
+  'majority','manifest','managing','matching','material','measured','merchant','midnight','military','mindless',
+  'moderate','momentum','movement','multiple',
+  'negative','neighbor','networks','normally','obstacle','occasion','official','offshore','operator','optimize',
+  'original','overcome',
+  'peaceful','personal','planning','platform','positive','practice','precious','prepared','presence','previous',
+  'priority','probably','progress','promised','proposal','protocol','provided',
+  'realized','received','reducing','referred','reformed','regional','released','remained','removing','reported',
+  'research','resolved','resource','restored','resulted','revealed',
+  'scenario','schedule','security','selected','separate','sequence','shortage','simulate','software','solution',
+  'speaking','specific','spectrum','spending','standard','standing','strategy','strength','striking','strongly',
+  'struggle','stunning','suddenly','superior','survival',
+  'tailored','targeted','teaching','template','terminal','thinking','together','training','traveled','trending',
+  'ultimate','uncommon','unlikely','unstable','upcoming',
+  'valuable','verified','virtually','warriors','watchful','whatever','willpower','wireless','wondered','woodland','workshop'
+];
 
-<script src="words.js"></script>
-<script src="game.js"></script>
-</body>
-</html>
+// Word length ranges per level
+const LEVEL_WORD_LENGTHS = [
+  [2, 3],   // Level 1
+  [3, 4],   // Level 2
+  [4, 5],   // Level 3
+  [5, 6],   // Level 4
+  [6, 7],   // Level 5
+  [7, 8],   // Level 6
+  [8, 9],   // Level 7
+  [9, 10],  // Level 8
+  [10, 12], // Level 9
+  [12, 99]  // Level 10
+];
+
+function getWordPool(level) {
+  const [minLen, maxLen] = LEVEL_WORD_LENGTHS[Math.min(level - 1, LEVEL_WORD_LENGTHS.length - 1)];
+  return ALL_WORDS.filter(w => w.length >= minLen && w.length <= maxLen);
+}
+</script>
+<script>
+// game.js — LEXIS core game engine
+
+const WAVES_PER_LEVEL  = 3;
+const BASE_SPEED       = 0.50;
+const SPEED_INCREASE   = 0.20;
+const STORAGE_KEY      = 'lexis_history';
+
+const LEVEL_NAMES  = ['RECRUIT','CADET','PILOT','ACE','VETERAN','ELITE','COMMANDER','WARLORD','LEGEND','MYTHIC'];
+const LEVEL_COLORS = ['#7DF9C8','#74B9FF','#A29BFE','#FEC89A','#FF9F43','#FF6B6B','#FD79A8','#E17055','#FDCB6E','#FFD700'];
+
+// ── Canvas setup ────────────────────────────────────────────
+const canvas = document.getElementById('gameCanvas');
+const ctx    = canvas.getContext('2d');
+const wrap   = document.getElementById('gameWrap');
+
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', () => { resize(); if (state) initStars(); });
+
+// ── Storage helpers ─────────────────────────────────────────
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch (e) { return []; }
+}
+function saveRun(run) {
+  const h = loadHistory();
+  h.push(run);
+  if (h.length > 50) h.splice(0, h.length - 50);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(h));
+}
+
+// ── Progress chart ──────────────────────────────────────────
+function buildProgressChart(containerEl) {
+  const history = loadHistory();
+  if (history.length === 0) {
+    containerEl.innerHTML = '<p style="color:#444;font-size:11px;text-align:center;padding:8px 0">No history yet — play a game first!</p>';
+    return;
+  }
+
+  const W = 500, H = 160;
+  const PAD = { top: 16, right: 16, bottom: 36, left: 52 };
+  const iW  = W - PAD.left - PAD.right;
+  const iH  = H - PAD.top  - PAD.bottom;
+
+  const c  = document.createElement('canvas');
+  c.width  = W; c.height = H; c.style.width = '100%';
+  const cx = c.getContext('2d');
+
+  const scores   = history.map(r => r.score);
+  const maxScore = Math.max(...scores, 100);
+
+  // Grid lines & Y labels
+  cx.strokeStyle = 'rgba(255,255,255,0.05)';
+  cx.lineWidth   = 0.5;
+  for (let i = 0; i <= 4; i++) {
+    const y   = PAD.top + (iH / 4) * i;
+    const val = Math.round(maxScore - (maxScore / 4) * i);
+    cx.beginPath(); cx.moveTo(PAD.left, y); cx.lineTo(PAD.left + iW, y); cx.stroke();
+    cx.fillStyle  = '#444';
+    cx.font       = '9px monospace';
+    cx.textAlign  = 'right';
+    cx.fillText(val >= 1000 ? (val / 1000).toFixed(1) + 'k' : val, PAD.left - 5, y + 3);
+  }
+
+  // X labels
+  cx.fillStyle  = '#444';
+  cx.font       = '9px monospace';
+  cx.textAlign  = 'center';
+  history.forEach((_, i) => {
+    if (history.length <= 10 || i % Math.ceil(history.length / 8) === 0 || i === history.length - 1) {
+      const x = PAD.left + (i / Math.max(history.length - 1, 1)) * iW;
+      cx.fillText('#' + (i + 1), x, H - PAD.bottom + 12);
+    }
+  });
+  cx.fillStyle = '#333';
+  cx.fillText('GAMES PLAYED', PAD.left + iW / 2, H - 2);
+
+  // Area fill
+  const grad = cx.createLinearGradient(0, PAD.top, 0, PAD.top + iH);
+  grad.addColorStop(0, 'rgba(125,249,200,0.18)');
+  grad.addColorStop(1, 'rgba(125,249,200,0.01)');
+  cx.beginPath();
+  history.forEach((r, i) => {
+    const x = PAD.left + (i / Math.max(history.length - 1, 1)) * iW;
+    const y = PAD.top + iH - (r.score / maxScore) * iH;
+    i === 0 ? cx.moveTo(x, y) : cx.lineTo(x, y);
+  });
+  cx.lineTo(PAD.left + iW, PAD.top + iH);
+  cx.lineTo(PAD.left,      PAD.top + iH);
+  cx.closePath();
+  cx.fillStyle = grad; cx.fill();
+
+  // Line
+  cx.beginPath();
+  cx.strokeStyle = '#7DF9C8'; cx.lineWidth = 1.8; cx.lineJoin = 'round';
+  history.forEach((r, i) => {
+    const x = PAD.left + (i / Math.max(history.length - 1, 1)) * iW;
+    const y = PAD.top + iH - (r.score / maxScore) * iH;
+    i === 0 ? cx.moveTo(x, y) : cx.lineTo(x, y);
+  });
+  cx.stroke();
+
+  // Best score dashed line
+  const bestScore = Math.max(...scores);
+  const byVal     = PAD.top + iH - (bestScore / maxScore) * iH;
+  cx.beginPath();
+  cx.strokeStyle = 'rgba(255,215,0,0.35)'; cx.lineWidth = 0.8; cx.setLineDash([4, 3]);
+  cx.moveTo(PAD.left, byVal); cx.lineTo(PAD.left + iW, byVal); cx.stroke();
+  cx.setLineDash([]);
+  cx.fillStyle = '#FFD700'; cx.font = '8px monospace'; cx.textAlign = 'left';
+  cx.fillText('BEST', PAD.left + 2, byVal - 3);
+
+  // Dots
+  history.forEach((r, i) => {
+    const x      = PAD.left + (i / Math.max(history.length - 1, 1)) * iW;
+    const y      = PAD.top + iH - (r.score / maxScore) * iH;
+    const isLast = i === history.length - 1;
+    const isBest = r.score === bestScore;
+    cx.beginPath();
+    cx.arc(x, y, isLast ? 4 : (isBest ? 3.5 : 2), 0, Math.PI * 2);
+    cx.fillStyle = isBest ? '#FFD700' : (isLast ? '#7DF9C8' : 'rgba(125,249,200,0.5)');
+    cx.fill();
+    if (isLast) { cx.strokeStyle = '#fff'; cx.lineWidth = 1; cx.stroke(); }
+  });
+
+  const title = document.createElement('div');
+  title.style.cssText = 'color:#7DF9C8;font-size:10px;letter-spacing:2px;text-align:center;margin-bottom:8px';
+  title.textContent   = 'YOUR PROGRESS — ' + history.length + ' GAME' + (history.length > 1 ? 'S' : '') + ' PLAYED';
+  containerEl.innerHTML = '';
+  containerEl.appendChild(title);
+  containerEl.appendChild(c);
+}
+
+// ── Game state ───────────────────────────────────────────────
+let state, stars, particles, explosions, fireBeams, animId;
+let usedWords = new Set();
+
+function getLevelFromWave(wave)  { return Math.min(Math.floor((wave - 1) / WAVES_PER_LEVEL) + 1, LEVEL_NAMES.length); }
+function getSpeedMultiplier(lv)  { return 1 + (lv - 1) * SPEED_INCREASE; }
+
+function pickWord(level) {
+  const pool      = getWordPool(level);
+  const available = pool.filter(w => !usedWords.has(w));
+  if (available.length === 0) { usedWords.clear(); return pool[Math.floor(Math.random() * pool.length)]; }
+  const w = available[Math.floor(Math.random() * available.length)];
+  usedWords.add(w);
+  return w;
+}
+
+function initStars() {
+  stars = Array.from({ length: 130 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.4 + 0.2,
+    speed: Math.random() * 0.4 + 0.08,
+    alpha: Math.random() * 0.6 + 0.3
+  }));
+}
+
+// ── New game ─────────────────────────────────────────────────
+function newGame() {
+  usedWords.clear();
+  if (animId) cancelAnimationFrame(animId);
+
+  state = {
+    score: 0, wave: 1, lives: 3, running: true,
+    enemies: [], typed: '', target: null,
+    waveSize: 5, spawnInterval: 100,
+    spawnTimer: 0, spawned: 0, waveComplete: false,
+    combo: 0, comboTimer: 0, level: 1, muzzleFlash: 0,
+    wordsDestroyed: 0, keystrokes: 0, correctKeys: 0,
+    best: parseInt(localStorage.getItem('lexis_best') || '0'),
+    startTime: Date.now()
+  };
+  particles = []; explosions = []; fireBeams = [];
+  initStars();
+  document.getElementById('overlay').style.display = 'none';
+  updateHUD(); updateLevelBar();
+  loop();
+}
+
+// ── Spawn ────────────────────────────────────────────────────
+function spawnEnemy() {
+  const word   = pickWord(state.level);
+  const margin = 55;
+  const x      = margin + Math.random() * (canvas.width - margin * 2);
+  const mult   = getSpeedMultiplier(state.level);
+  const spd    = (BASE_SPEED + Math.random() * 0.18) * mult;
+  const col    = LEVEL_COLORS[(state.level - 1) % LEVEL_COLORS.length];
+  state.enemies.push({ word, x, y: -30, speed: spd, col, destroyed: 0, pulseT: Math.random() * Math.PI * 2 });
+}
+
+// ── Fire beam ────────────────────────────────────────────────
+function spawnFireBeam(ex, ey, col) {
+  fireBeams.push({ x1: canvas.width / 2, y1: canvas.height - 60, x2: ex, y2: ey, col, life: 10, maxLife: 10 });
+}
+
+function fireParticles(x, y, col, count) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const spd   = Math.random() * 4 + 1;
+    particles.push({ x, y, vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd, alpha: 1, col, life: Math.random() * 30 + 15, r: Math.random() * 2.5 + 1 });
+  }
+}
+
+// ── Drawing ──────────────────────────────────────────────────
+function drawShip(x, y) {
+  ctx.save(); ctx.translate(x, y);
+  ctx.fillStyle = 'rgba(125,249,200,0.12)';
+  ctx.beginPath(); ctx.ellipse(0, 14, 8, 5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#7DF9C8'; ctx.shadowColor = '#7DF9C8'; ctx.shadowBlur = 14;
+  ctx.beginPath();
+  ctx.moveTo(0, -22); ctx.lineTo(-13, 11); ctx.lineTo(-6, 6);
+  ctx.lineTo(0, 9);  ctx.lineTo(6, 6);   ctx.lineTo(13, 11);
+  ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(5,6,15,0.85)';
+  ctx.beginPath(); ctx.ellipse(0, -8, 4, 6, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(125,249,200,0.5)';
+  ctx.beginPath(); ctx.ellipse(0, -9, 2, 3, 0, 0, Math.PI * 2); ctx.fill();
+  if (state.muzzleFlash > 0) {
+    ctx.globalAlpha = state.muzzleFlash / 8;
+    ctx.fillStyle = '#FF9F43'; ctx.shadowColor = '#FF6B00'; ctx.shadowBlur = 20;
+    ctx.beginPath(); ctx.arc(0, -24, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+  }
+  ctx.restore();
+}
+
+function drawEnemy(e) {
+  ctx.save(); ctx.translate(e.x, e.y);
+  const pulse = Math.sin(e.pulseT) * 2;
+  if (state.target === e) {
+    ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2);
+    ctx.strokeStyle = e.col; ctx.globalAlpha = 0.25; ctx.lineWidth = 1;
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  ctx.fillStyle = e.col; ctx.shadowColor = e.col; ctx.shadowBlur = 8 + pulse;
+  ctx.beginPath();
+  ctx.moveTo(0, 14);  ctx.lineTo(-10, -7); ctx.lineTo(-4, -2);
+  ctx.lineTo(0, -10); ctx.lineTo(4, -2);   ctx.lineTo(10, -7);
+  ctx.closePath(); ctx.fill(); ctx.shadowBlur = 0;
+
+  const remaining = e.word.slice(e.destroyed);
+  ctx.font = 'bold 13px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  if (state.target === e && remaining.length > 0) {
+    const totalW = ctx.measureText(remaining).width;
+    const sx     = -totalW / 2;
+    const firstW = ctx.measureText(remaining[0]).width;
+    ctx.fillStyle = '#FF9F43';
+    ctx.fillText(remaining[0], sx + firstW / 2, 19);
+    if (remaining.length > 1) {
+      const rest = remaining.slice(1);
+      ctx.fillStyle = 'rgba(255,255,255,0.93)';
+      ctx.fillText(rest, sx + firstW + ctx.measureText(rest).width / 2, 19);
+    }
+  } else {
+    ctx.fillStyle = 'rgba(255,255,255,0.93)';
+    ctx.fillText(remaining, 0, 19);
+  }
+  ctx.restore();
+}
+
+function drawFireBeams() {
+  for (const b of fireBeams) {
+    const alpha = b.life / b.maxLife;
+    ctx.save(); ctx.globalAlpha = alpha * 0.85;
+    ctx.strokeStyle = b.col; ctx.lineWidth = 2.5; ctx.shadowColor = b.col; ctx.shadowBlur = 10;
+    ctx.beginPath();
+    const segs = 6;
+    const dx   = (b.x2 - b.x1) / segs;
+    const dy   = (b.y2 - b.y1) / segs;
+    ctx.moveTo(b.x1, b.y1);
+    for (let i = 1; i <= segs; i++) {
+      const jitter = (1 - alpha) * 6;
+      const jx = i < segs ? (Math.random() - 0.5) * jitter : 0;
+      const jy = i < segs ? (Math.random() - 0.5) * jitter : 0;
+      ctx.lineTo(b.x1 + dx * i + jx, b.y1 + dy * i + jy);
+    }
+    ctx.stroke();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.shadowBlur = 0; ctx.globalAlpha = alpha * 0.5;
+    ctx.beginPath(); ctx.moveTo(b.x1, b.y1); ctx.lineTo(b.x2, b.y2); ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// ── Update ───────────────────────────────────────────────────
+function update() {
+  if (!state.running) return;
+  const H = canvas.height;
+  if (state.muzzleFlash > 0) state.muzzleFlash--;
+  state.spawnTimer++;
+  if (state.comboTimer > 0) state.comboTimer--;
+  else state.combo = 0;
+
+  if (state.spawned < state.waveSize && state.spawnTimer >= state.spawnInterval) {
+    spawnEnemy(); state.spawned++; state.spawnTimer = 0;
+  }
+
+  for (let i = fireBeams.length - 1; i >= 0; i--) {
+    fireBeams[i].life--;
+    if (fireBeams[i].life <= 0) fireBeams.splice(i, 1);
+  }
+
+  for (let i = state.enemies.length - 1; i >= 0; i--) {
+    const e = state.enemies[i];
+    e.y += e.speed; e.pulseT += 0.07;
+    if (e.y > H + 40) {
+      if (state.target === e) {
+        state.target = null; state.typed = '';
+        document.getElementById('typed-display').textContent = '';
+      }
+      state.enemies.splice(i, 1);
+      state.lives--; state.combo = 0;
+      fireParticles(e.x, H - 20, '#FF6B6B', 16);
+      updateHUD();
+      if (state.lives <= 0) { endGame(); return; }
+    }
+  }
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.alpha -= 1 / p.life;
+    if (p.alpha <= 0) particles.splice(i, 1);
+  }
+
+  for (let i = explosions.length - 1; i >= 0; i--) {
+    explosions[i].t++;
+    if (explosions[i].t > 30) explosions.splice(i, 1);
+  }
+
+  if (state.spawned >= state.waveSize && state.enemies.length === 0 && !state.waveComplete) {
+    state.waveComplete = true; nextWave();
+  }
+}
+
+// ── Draw frame ───────────────────────────────────────────────
+function draw() {
+  const W = canvas.width, H = canvas.height;
+  ctx.fillStyle = '#05060F'; ctx.fillRect(0, 0, W, H);
+
+  const sm = getSpeedMultiplier(state.level);
+  for (const s of stars) {
+    s.y += s.speed * sm * 0.5;
+    if (s.y > H) { s.y = 0; s.x = Math.random() * W; }
+    ctx.globalAlpha = s.alpha; ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  ctx.strokeStyle = 'rgba(125,249,200,0.10)'; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(0, H - 36); ctx.lineTo(W, H - 36); ctx.stroke();
+
+  for (const ex of explosions) {
+    const prog = ex.t / 30;
+    ctx.globalAlpha = (1 - prog) * 0.9; ctx.strokeStyle = ex.col; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(ex.x, ex.y, ex.r * prog * 3.5, 0, Math.PI * 2); ctx.stroke();
+    ctx.globalAlpha = (1 - prog) * 0.35; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(ex.x, ex.y, ex.r * prog * 1.8, 0, Math.PI * 2); ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  for (const p of particles) {
+    ctx.globalAlpha = p.alpha; ctx.fillStyle = p.col;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  drawFireBeams();
+  for (const e of state.enemies) drawEnemy(e);
+  drawShip(W / 2, H - 60);
+}
+
+function loop() {
+  if (!state || !state.running) return;
+  update(); draw();
+  animId = requestAnimationFrame(loop);
+}
+
+// ── HUD helpers ──────────────────────────────────────────────
+function updateHUD() {
+  document.getElementById('score').textContent = state.score.toLocaleString();
+  document.getElementById('wave').textContent  = state.wave;
+  document.getElementById('best').textContent  = state.best.toLocaleString();
+  document.getElementById('hearts').textContent =
+    '❤️'.repeat(state.lives) + '🖤'.repeat(Math.max(0, 3 - state.lives));
+}
+
+function updateLevelBar() {
+  const lv   = state.level;
+  const name = LEVEL_NAMES[Math.min(lv - 1, LEVEL_NAMES.length - 1)];
+  const mult = getSpeedMultiplier(lv);
+  const col  = LEVEL_COLORS[(lv - 1) % LEVEL_COLORS.length];
+  const wil  = ((state.wave - 1) % WAVES_PER_LEVEL) + 1;
+  const pct  = Math.round((wil / WAVES_PER_LEVEL) * 100);
+  document.getElementById('level-info').innerHTML =
+    `<span style="color:${col}">LVL ${lv}</span> <span style="color:#444;margin-left:6px">${name}</span>`;
+  document.getElementById('xp-bar').style.width      = pct + '%';
+  document.getElementById('xp-bar').style.background = col;
+  document.getElementById('speed-info').textContent  = 'SPEED ' + mult.toFixed(1) + '×';
+}
+
+// ── Wave / Level ─────────────────────────────────────────────
+function nextWave() {
+  state.wave++;
+  state.waveSize     = 4 + Math.floor(state.wave * 1.5);
+  state.spawnInterval = Math.max(45, 100 - state.wave * 5);
+  state.spawned      = 0; state.waveComplete = false;
+
+  const newLevel  = getLevelFromWave(state.wave);
+  const leveledUp = newLevel > state.level;
+  state.level     = newLevel;
+  state.score    += state.wave * 60;
+  updateHUD(); updateLevelBar();
+
+  if (leveledUp) {
+    showLevelUp(state.level);
+  } else {
+    const wil = ((state.wave - 1) % WAVES_PER_LEVEL) + 1;
+    const wd  = document.getElementById('wave-display');
+    wd.innerHTML = 'WAVE ' + state.wave +
+      `<br><span style="font-size:12px;color:#aaa">WAVE ${wil} OF ${WAVES_PER_LEVEL} — LVL ${state.level}</span>`;
+    wd.style.opacity = '1';
+    setTimeout(() => wd.style.opacity = '0', 1600);
+  }
+}
+
+function showLevelUp(level) {
+  const name = LEVEL_NAMES[Math.min(level - 1, LEVEL_NAMES.length - 1)];
+  const mult = getSpeedMultiplier(level);
+  document.getElementById('lvl-title').textContent = 'LEVEL ' + level + ' — ' + name;
+  document.getElementById('lvl-sub').textContent   = 'SPEED ' + mult.toFixed(1) + '× — BRACE YOURSELF';
+  const banner = document.getElementById('level-up-banner');
+  banner.style.opacity = '1'; setTimeout(() => banner.style.opacity = '0', 2400);
+  const wd = document.getElementById('wave-display');
+  wd.innerHTML = 'WAVE ' + state.wave; wd.style.opacity = '1';
+  setTimeout(() => wd.style.opacity = '0', 2400);
+}
+
+// ── End game ─────────────────────────────────────────────────
+function endGame() {
+  state.running = false;
+  cancelAnimationFrame(animId);
+  if (state.score > state.best) {
+    state.best = state.score;
+    localStorage.setItem('lexis_best', state.best);
+  }
+
+  const duration = Math.round((Date.now() - state.startTime) / 1000);
+  const accuracy = state.keystrokes > 0
+    ? Math.round((state.correctKeys / state.keystrokes) * 100) : 0;
+
+  saveRun({ score: state.score, wave: state.wave, level: state.level,
+    words: state.wordsDestroyed, accuracy, duration, date: new Date().toLocaleDateString() });
+
+  const lvlName = LEVEL_NAMES[Math.min(state.level - 1, LEVEL_NAMES.length - 1)];
+  const ov      = document.getElementById('overlay');
+  ov.style.display = 'flex';
+  ov.innerHTML = `
+    <div style="font-size:30px">💥</div>
+    <h2 style="color:#FF6B6B;font-size:20px;text-shadow:0 0 14px rgba(255,107,107,0.4)">SHIELDS DOWN</h2>
+    <div class="score-final">${state.score.toLocaleString()} pts</div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="sv">${state.wave}</div><div class="sl">WAVE</div></div>
+      <div class="stat-box"><div class="sv">${lvlName}</div><div class="sl">RANK</div></div>
+      <div class="stat-box"><div class="sv">${state.wordsDestroyed}</div><div class="sl">WORDS</div></div>
+      <div class="stat-box"><div class="sv">${accuracy}%</div><div class="sl">ACCURACY</div></div>
+      <div class="stat-box"><div class="sv">${duration}s</div><div class="sl">TIME</div></div>
+    </div>
+    <div id="progressChart"></div>
+    <button id="startBtn">PLAY AGAIN</button>
+    <p style="color:#282828;font-size:10px;letter-spacing:1px;margin-top:4px">LEXIS — PROGRESS SAVED LOCALLY</p>
+  `;
+  buildProgressChart(document.getElementById('progressChart'));
+  document.getElementById('startBtn').addEventListener('click', newGame);
+}
+
+// ── Key handler ──────────────────────────────────────────────
+function handleKey(ch) {
+  if (!state || !state.running) return;
+  state.keystrokes++;
+
+  const tryHit = (en) => {
+    spawnFireBeam(en.x, en.y, en.col);
+    state.muzzleFlash = 8;
+    fireParticles(en.x, en.y, en.col, 6);
+    en.destroyed++;
+    state.correctKeys++;
+    state.typed += ch;
+    document.getElementById('typed-display').textContent = state.typed.toUpperCase();
+
+    if (en.destroyed >= en.word.length) {
+      const pts = en.word.length * 12 * state.level + (state.combo > 2 ? state.combo * 8 : 0);
+      state.score += pts;
+      state.combo++; state.comboTimer = 90; state.wordsDestroyed++;
+      fireParticles(en.x, en.y, en.col, en.word.length * 5 + 12);
+      explosions.push({ x: en.x, y: en.y, r: 16 + en.word.length * 3, col: en.col, t: 0 });
+      state.enemies.splice(state.enemies.indexOf(en), 1);
+      state.target = null; state.typed = '';
+      document.getElementById('typed-display').textContent = '';
+      if (state.combo > 2) {
+        const cd = document.getElementById('combo-display');
+        cd.textContent = 'COMBO x' + state.combo + '!'; cd.style.opacity = '1';
+        setTimeout(() => cd.style.opacity = '0', 700);
+      }
+      updateHUD();
+    }
+  };
+
+  if (state.target) {
+    const en = state.target;
+    if (en.word[en.destroyed] === ch) {
+      tryHit(en);
+    } else {
+      state.target = null; state.typed = '';
+      let found = false;
+      for (const en2 of state.enemies) {
+        if (en2.word[en2.destroyed] === ch) { state.target = en2; tryHit(en2); found = true; break; }
+      }
+      if (!found) document.getElementById('typed-display').textContent = '';
+    }
+  } else {
+    let found = false;
+    for (const en of state.enemies) {
+      if (en.word[en.destroyed] === ch) { state.target = en; tryHit(en); found = true; break; }
+    }
+    if (!found) document.getElementById('typed-display').textContent = '';
+  }
+}
+
+document.addEventListener('keydown', (ev) => {
+  if (!state || !state.running) return;
+  if (ev.key === 'Backspace') {
+    state.typed = ''; state.target = null;
+    document.getElementById('typed-display').textContent = ''; return;
+  }
+  if (ev.key.length !== 1 || !/[a-zA-Z]/.test(ev.key)) return;
+  handleKey(ev.key.toLowerCase());
+});
+
+// ── Start screen history preview ─────────────────────────────
+(function () {
+  const h  = loadHistory();
+  const el = document.getElementById('historyPreview');
+  if (!el || h.length === 0) return;
+  const best = Math.max(...h.map(r => r.score));
+  el.innerHTML = `<p style="color:#444;font-size:10px;letter-spacing:1px;margin-top:10px">
+    ${h.length} GAME${h.length > 1 ? 'S' : ''} PLAYED &nbsp;·&nbsp; BEST: ${best.toLocaleString()} PTS
+  </p>`;
+})();
+
+document.getElementById('startBtn').addEventListener('click', newGame);
+</script>
+</body></html>
