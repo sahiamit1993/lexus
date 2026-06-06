@@ -14,9 +14,8 @@ const ctx    = canvas.getContext('2d');
 const wrap   = document.getElementById('gameWrap');
 
 function resize() {
-  const w = Math.min(wrap.clientWidth, 720);
-  canvas.width  = w;
-  canvas.height = Math.round(w * 0.70);
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
 resize();
 window.addEventListener('resize', () => { resize(); if (state) initStars(); });
